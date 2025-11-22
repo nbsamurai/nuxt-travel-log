@@ -15,6 +15,13 @@
       "when": 1763797064571,
       "tag": "0001_damp_bushwacker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1763808421424,
+      "tag": "0002_outgoing_micromax",
+      "breakpoints": true
     }
   ]
 }
