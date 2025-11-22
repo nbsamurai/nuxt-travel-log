@@ -1,8 +1,7 @@
 // import { drizzle } from "drizzle-orm/libsql";
 import { drizzle } from "drizzle-orm/tursodatabase/database";
 
-import env from "~/lib/env";
-
+import env from "../env";
 import * as schema from "./schema";
 
 // You can specify any property from the libsql connection options
