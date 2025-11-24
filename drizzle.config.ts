@@ -8,8 +8,8 @@ export default defineConfig({
   casing: "snake_case",
   dialect: "turso",
   dbCredentials: {
-    // url: env.TURSO_DATABASE_URL,
-    // authToken: env.TURSO_AUTH_TOKEN,
-    url: env.DB_FILE_NAME,
+    url: env.TURSO_DATABASE_URL,
+    authToken: env.TURSO_AUTH_TOKEN,
+    // url: env.DB_FILE_NAME,
   },
 });
