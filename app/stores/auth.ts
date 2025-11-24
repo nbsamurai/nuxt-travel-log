@@ -4,11 +4,17 @@ import { defineStore } from "pinia";
 const authClient = createAuthClient();
 
 export const useAuthStore = defineStore("authStore", () => {
-  const session = authClient.useSession();
+  const session = ref<Awaited<ReturnType<typeof authClient.useSession>> | null>(null);
 
-  const user = computed(() => session.value.data?.user);
+  async function init() {
+    const data = await authClient.useSession(useFetch);
+    session.value = data;
+  }
 
-  const loading = computed(() => session.value.isPending || session.value.isRefetching);
+  const user = computed(() => session.value?.data?.user);
+
+  const loading = computed(() => session.value?.isPending);
+
   async function signIn() {
     await authClient.signIn.social({
       provider: "github",
@@ -22,6 +28,7 @@ export const useAuthStore = defineStore("authStore", () => {
   }
 
   return {
+    init,
     signIn,
     loading,
     user,
