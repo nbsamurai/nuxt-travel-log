@@ -1,5 +1,4 @@
 import { createAuthClient } from "better-auth/vue";
-import { defineStore } from "pinia";
 
 const authClient = createAuthClient();
 
