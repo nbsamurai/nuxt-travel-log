@@ -1,13 +1,9 @@
 import type { DrizzleQueryError } from "drizzle-orm";
 
-import { and, eq } from "drizzle-orm";
-import { customAlphabet } from "nanoid";
 import slugify from "slug";
 
-import db from "~/lib/db";
-import { InsertLocation, location } from "~/lib/db/schema";
-
-const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 5);
+import { findLocationByName, findUniqueSlug, insertLocation } from "~/lib/db/queries/location";
+import { InsertLocation } from "~/lib/db/schema";
 
 export default defineEventHandler(async (event) => {
   if (!event.context.user) {
@@ -41,11 +37,7 @@ export default defineEventHandler(async (event) => {
     }));
   }
 
-  const existingRows = await db.select().from(location).where(and(
-    eq(location.name, result.data.name),
-    eq(location.userId, event.context.user.id),
-  )).limit(1);
-  const existingLocation = existingRows[0] ?? null;
+  const existingLocation = await findLocationByName(result.data, event.context.user.id);
 
   if (existingLocation) {
     return sendError(event, createError({
@@ -54,28 +46,17 @@ export default defineEventHandler(async (event) => {
     }));
   }
 
-  let slug = slugify(result.data.name);
+  const slug = await findUniqueSlug(slugify(result.data.name));
 
-  const slugRows = await db.select().from(location).where(eq(location.slug, slug)).limit(1);
-  let existing = slugRows.length > 0;
-
-  while (existing) {
-    const id = nanoid();
-    const idSlug = `${slug}-${id}`;
-    const idRows = await db.select().from(location).where(eq(location.slug, idSlug)).limit(1);
-    existing = idRows.length > 0;
-    if (!existing) {
-      slug = idSlug;
-    }
+  if (!slug) {
+    return sendError(event, createError({
+      statusCode: 500,
+      statusMessage: "Failed to generate a unique slug.",
+    }));
   }
 
   try {
-    const [created] = await db.insert(location).values({
-      ...result.data,
-      slug: slugify(result.data.name),
-      userId: event.context.user.id,
-    }).returning();
-    return created;
+    return insertLocation(result.data, slug, event.context.user.id);
   }
   catch (e) {
     const error = e as DrizzleQueryError;
